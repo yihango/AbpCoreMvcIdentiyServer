@@ -55,7 +55,8 @@ namespace AbpCoreMvcIdentiyServer.Authentication
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "default-api"
                     }
                 }
             };
