@@ -17,12 +17,14 @@ using AbpCoreMvcIdentiyServer.Authorization;
 using AbpCoreMvcIdentiyServer.Authorization.Users;
 using AbpCoreMvcIdentiyServer.Models.TokenAuth;
 using AbpCoreMvcIdentiyServer.MultiTenancy;
+using Microsoft.Extensions.Configuration;
 
 namespace AbpCoreMvcIdentiyServer.Controllers
 {
     [Route("api/[controller]/[action]")]
     public class TokenAuthController : AbpCoreMvcIdentiyServerControllerBase
     {
+        private readonly IConfiguration _appConfiguration;
         private readonly LogInManager _logInManager;
         private readonly ITenantCache _tenantCache;
         private readonly AbpLoginResultTypeHelper _abpLoginResultTypeHelper;
@@ -32,6 +34,7 @@ namespace AbpCoreMvcIdentiyServer.Controllers
         private readonly UserRegistrationManager _userRegistrationManager;
 
         public TokenAuthController(
+            IConfiguration appConfiguration,
             LogInManager logInManager,
             ITenantCache tenantCache,
             AbpLoginResultTypeHelper abpLoginResultTypeHelper,
@@ -40,6 +43,7 @@ namespace AbpCoreMvcIdentiyServer.Controllers
             IExternalAuthManager externalAuthManager,
             UserRegistrationManager userRegistrationManager)
         {
+            _appConfiguration = appConfiguration;
             _logInManager = logInManager;
             _tenantCache = tenantCache;
             _abpLoginResultTypeHelper = abpLoginResultTypeHelper;
@@ -52,21 +56,28 @@ namespace AbpCoreMvcIdentiyServer.Controllers
         [HttpPost]
         public async Task<AuthenticateResultModel> Authenticate([FromBody] AuthenticateModel model)
         {
-            var loginResult = await GetLoginResultAsync(
-                model.UserNameOrEmailAddress,
-                model.Password,
-                GetTenancyNameOrNull()
-            );
-
-            var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
-
-            return new AuthenticateResultModel
+            if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
             {
-                AccessToken = accessToken,
-                EncryptedAccessToken = GetEncrpyedAccessToken(accessToken),
-                ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
-                UserId = loginResult.User.Id
-            };
+                var loginResult = await GetLoginResultAsync(
+                    model.UserNameOrEmailAddress,
+                    model.Password,
+                    GetTenancyNameOrNull()
+                );
+
+                var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
+
+                return new AuthenticateResultModel
+                {
+                    AccessToken = accessToken,
+                    EncryptedAccessToken = GetEncrpyedAccessToken(accessToken),
+                    ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
+                    UserId = loginResult.User.Id
+                };
+            }
+            else
+            {
+                throw new UserFriendlyException("错误的访问");
+            }
         }
 
         [HttpGet]
