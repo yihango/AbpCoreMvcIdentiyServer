@@ -13,7 +13,9 @@ using AbpCoreMvcIdentiyServer.Configuration;
 using AbpCoreMvcIdentiyServer.Identity;
 using AbpCoreMvcIdentiyServer.Web.Resources;
 using Abp.AspNetCore.SignalR.Hubs;
-
+using AbpCoreMvcIdentiyServer.Authentication;
+using AbpCoreMvcIdentiyServer.Authorization.Users;
+using Abp.IdentityServer4;
 
 namespace AbpCoreMvcIdentiyServer.Web.Startup
 {
@@ -35,6 +37,14 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
 
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
+
+            services.AddIdentityServer()
+                    .AddDeveloperSigningCredential()
+                    .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
+                    .AddInMemoryApiResources(IdentityServerConfig.GetApiResources())
+                    .AddInMemoryClients(IdentityServerConfig.GetClients())
+                    .AddAbpPersistedGrants<IAbpPersistedGrantDbContext>()
+                    .AddAbpIdentityServer<User>();
 
             services.AddScoped<IWebResourceManager, WebResourceManager>();
 
@@ -64,25 +74,26 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            // 
+            if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
+            {
+                app.UseAuthentication();
+                app.UseJwtTokenMiddleware();
+            }
+            else if (bool.Parse(_appConfiguration["Authentication:IdentityServer4:IsEnabled"]))
+            {
+                app.UseJwtTokenMiddleware("IdentityBearer");
+                app.UseIdentityServer();
+            }
 
-            app.UseJwtTokenMiddleware();
 
             app.UseSignalR(routes =>
             {
                 routes.MapHub<AbpCommonHub>("/signalr");
             });
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "defaultWithArea",
-                    template: "{area}/{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+            app.UseMvcWithDefaultRoute();
         }
     }
 }

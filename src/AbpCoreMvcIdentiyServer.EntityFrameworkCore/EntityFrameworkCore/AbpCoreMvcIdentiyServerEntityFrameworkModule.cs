@@ -1,4 +1,5 @@
 ﻿using Abp.EntityFrameworkCore.Configuration;
+using Abp.IdentityServer4;
 using Abp.Modules;
 using Abp.Reflection.Extensions;
 using Abp.Zero.EntityFrameworkCore;
@@ -7,8 +8,9 @@ using AbpCoreMvcIdentiyServer.EntityFrameworkCore.Seed;
 namespace AbpCoreMvcIdentiyServer.EntityFrameworkCore
 {
     [DependsOn(
-        typeof(AbpCoreMvcIdentiyServerCoreModule), 
-        typeof(AbpZeroCoreEntityFrameworkCoreModule))]
+           typeof(AbpCoreMvcIdentiyServerCoreModule),
+           typeof(AbpZeroCoreEntityFrameworkCoreModule),
+           typeof(AbpZeroCoreIdentityServerEntityFrameworkCoreModule))]
     public class AbpCoreMvcIdentiyServerEntityFrameworkModule : AbpModule
     {
         /* Used it tests to skip dbcontext registration, in order to use in-memory database of EF Core */

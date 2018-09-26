@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Abp.Runtime.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +21,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
                     .AddJwtBearer(options =>
                     {
                         options.Audience = configuration["Authentication:JwtBearer:Audience"];
-                        
+
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             // The signing key must match!
@@ -37,9 +42,49 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
                             // If you want to allow a certain amount of clock drift, set that here
                             ClockSkew = TimeSpan.Zero
                         };
+
+
+                        options.Events = new JwtBearerEvents
+                        {
+                            OnMessageReceived = QueryStringTokenResolver
+                        };
+
                     });
-                
+
             }
+            else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
+            {
+                services.AddAuthentication()
+                    .AddIdentityServerAuthentication("IdentityBearer", options =>
+                    {
+                        options.Authority = configuration["Authentication:IdentityServer4:Authority"];
+                        options.RequireHttpsMetadata = false;
+                    });
+            }
+        }
+
+
+        /* This method is needed to authorize SignalR javascript client.
+        * SignalR can not send authorization header. So, we are getting it from query string as an encrypted text. */
+        private static Task QueryStringTokenResolver(MessageReceivedContext context)
+        {
+            if (!context.HttpContext.Request.Path.HasValue ||
+                !context.HttpContext.Request.Path.Value.StartsWith("/signalr"))
+            {
+                // We are just looking for signalr clients
+                return Task.CompletedTask;
+            }
+
+            var qsAuthToken = context.HttpContext.Request.Query["enc_auth_token"].FirstOrDefault();
+            if (qsAuthToken == null)
+            {
+                // Cookie value does not matches to querystring value
+                return Task.CompletedTask;
+            }
+
+            // Set auth token from cookie
+            context.Token = SimpleStringCipher.Instance.Decrypt(qsAuthToken, AppConsts.DefaultPassPhrase);
+            return Task.CompletedTask;
         }
     }
 }
