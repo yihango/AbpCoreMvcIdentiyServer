@@ -98,7 +98,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
 
             app.UseAuthentication();
 
-            // IdentityServer4
+            // TODO:IdentiyServer Config Use
             if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
             {
                 app.UseJwtTokenMiddleware();

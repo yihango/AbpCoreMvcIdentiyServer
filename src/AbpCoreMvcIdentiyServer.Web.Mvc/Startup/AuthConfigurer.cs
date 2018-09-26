@@ -51,7 +51,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
 
                     });
 
-            }
+            }// TODO:Add IdentiyServer Authentication
             else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
             {
                 services.AddAuthentication()

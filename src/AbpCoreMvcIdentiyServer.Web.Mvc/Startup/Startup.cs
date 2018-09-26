@@ -35,9 +35,9 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
                 options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
             );
 
+            // TODO:IdentiyServer Config Add
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
-
             services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
                     .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
@@ -74,7 +74,8 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
 
             app.UseStaticFiles();
 
-            // 
+
+            // TODO:IdentiyServer Config Use
             if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
             {
                 app.UseAuthentication();

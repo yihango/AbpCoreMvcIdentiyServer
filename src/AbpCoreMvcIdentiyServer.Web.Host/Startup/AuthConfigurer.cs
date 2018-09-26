@@ -50,7 +50,8 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
                         OnMessageReceived = QueryStringTokenResolver
                     };
                 });
-            }
+
+            }// TODO:Add IdentiyServer Authentication
             else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
             {
                 services.AddAuthentication()
