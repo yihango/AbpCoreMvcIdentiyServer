@@ -250,3 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/src/AbpCoreMvcIdentiyServer.Web.Host/App_Data/Logs/Logs.txt
+/src/AbpCoreMvcIdentiyServer.Web.Mvc/App_Data/Logs/Logs.txt

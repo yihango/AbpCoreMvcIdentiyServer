@@ -51,11 +51,11 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
                     };
                 });
 
-            }// TODO:Add IdentiyServer Authentication
+            }// TODO:IdentiyServer4客户端配置
             else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
             {
                 services.AddAuthentication()
-                    .AddIdentityServerAuthentication("IdentityBearer", options =>
+                    .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
                     {
                         options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
                         options.Authority = configuration["Authentication:IdentityServer4:Authority"];

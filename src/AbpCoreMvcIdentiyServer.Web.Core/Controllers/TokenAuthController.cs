@@ -18,6 +18,9 @@ using AbpCoreMvcIdentiyServer.Authorization.Users;
 using AbpCoreMvcIdentiyServer.Models.TokenAuth;
 using AbpCoreMvcIdentiyServer.MultiTenancy;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using IdentityModel.Client;
+using System.Net;
 
 namespace AbpCoreMvcIdentiyServer.Controllers
 {
@@ -73,10 +76,42 @@ namespace AbpCoreMvcIdentiyServer.Controllers
                     ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
                     UserId = loginResult.User.Id
                 };
+
+            }// TODO:IdentityServer4 请求token
+            else if (bool.Parse(_appConfiguration["Authentication:IdentityServer4:IsEnabled"]))
+            {
+                // 配置中的客户端信息
+                var oauthBaseUrl = _appConfiguration["Authentication:IdentityServer4:Authority"];
+                var client = _appConfiguration["Authentication:IdentityServer4:ClientId"];
+                var secret = _appConfiguration["Authentication:IdentityServer4:Secret"];
+
+                var httpHandler = new HttpClientHandler();
+
+                //Set TenantId
+                httpHandler.CookieContainer.Add(new Uri(oauthBaseUrl), new Cookie(MultiTenancyConsts.TenantIdResolveKey, AbpSession.TenantId?.ToString()));
+
+                var tokenClient = new TokenClient($"{oauthBaseUrl}/connect/token", client, secret, httpHandler);
+
+                var tokenResponse = tokenClient
+                    .RequestResourceOwnerPasswordAsync(model.UserNameOrEmailAddress, model.Password)
+                    .ConfigureAwait(false)
+                    .GetAwaiter().GetResult();
+
+                if (tokenResponse.IsError)
+                {
+                    throw new UserFriendlyException(tokenResponse.ErrorDescription);
+                }
+
+                return new AuthenticateResultModel
+                {
+                    AccessToken = tokenResponse.AccessToken,
+                    EncryptedAccessToken = GetEncrpyedAccessToken(tokenResponse.AccessToken),
+                    ExpireInSeconds = tokenResponse.ExpiresIn,
+                };
             }
             else
             {
-                throw new UserFriendlyException("错误的访问");
+                throw new UserFriendlyException("认证配置错误");
             }
         }
 

@@ -1,8 +1,11 @@
-﻿using IdentityServer4;
+﻿using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace AbpCoreMvcIdentiyServer.Authentication
@@ -13,7 +16,7 @@ namespace AbpCoreMvcIdentiyServer.Authentication
         {
             return new List<ApiResource>
             {
-                new ApiResource("default-api", "Default (all) API")
+                 new ApiResource("default-api", "Default (all) API")
             };
         }
 

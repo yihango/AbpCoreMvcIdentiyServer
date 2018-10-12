@@ -96,17 +96,10 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
 
-            // TODO:IdentiyServer Config Use
-            if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
-            {
-                app.UseJwtTokenMiddleware();
-            }
-            else if (bool.Parse(_appConfiguration["Authentication:IdentityServer4:IsEnabled"]))
-            {
-                app.UseJwtTokenMiddleware("IdentityBearer");
-            }
+            app.UseAuthentication();
+            app.UseJwtTokenMiddleware();
+
 
             app.UseAbpRequestLocalization();
 

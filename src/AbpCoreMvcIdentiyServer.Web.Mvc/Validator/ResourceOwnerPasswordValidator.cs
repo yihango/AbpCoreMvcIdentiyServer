@@ -8,6 +8,7 @@ using AbpCoreMvcIdentiyServer.Authorization;
 using AbpCoreMvcIdentiyServer.Authorization.Users;
 using AbpCoreMvcIdentiyServer.MultiTenancy;
 using IdentityServer4.Models;
+using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -19,6 +20,20 @@ using System.Threading.Tasks;
 
 namespace AbpCoreMvcIdentiyServer.Web.Validator
 {
+    public class ProfileService : IProfileService
+    {
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        {
+            var claims = context.Subject.Claims.ToList();
+            context.IssuedClaims = claims.ToList();
+        }
+        public async Task IsActiveAsync(IsActiveContext context)
+        {
+            context.IsActive = true;
+        }
+    }
+
+
     public class ResourceOwnerPasswordValidator : IResourceOwnerPasswordValidator
     {
         public IAbpSession AbpSession { get; set; }
@@ -42,7 +57,14 @@ namespace AbpCoreMvcIdentiyServer.Web.Validator
             IExternalAuthManager externalAuthManager,
             UserRegistrationManager userRegistrationManager)
         {
-            AbpSession = NullAbpSession.Instance;
+            _appConfiguration = appConfiguration;
+            _logInManager = logInManager;
+            _tenantCache = tenantCache;
+            _abpLoginResultTypeHelper = abpLoginResultTypeHelper;
+            _configuration = configuration;
+            _externalAuthConfiguration = externalAuthConfiguration;
+            _externalAuthManager = externalAuthManager;
+            _userRegistrationManager = userRegistrationManager;
         }
 
         public async Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
@@ -57,7 +79,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Validator
 
                 context.Result = new GrantValidationResult(
                     subject: context.UserName,
-                    authenticationMethod: "custom",
+                    authenticationMethod: "passwrod",
                     claims: CreateJwtClaims(loginResult.Identity)
                     );
             }
@@ -65,27 +87,6 @@ namespace AbpCoreMvcIdentiyServer.Web.Validator
             {
                 context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, e.Message);
             }
-
-            ////根据context.UserName和context.Password与数据库的数据做校验，判断是否合法
-            //if (context.UserName == "admin" && context.Password == "123")
-            //{
-            //    context.Result = new GrantValidationResult(
-            //        subject: context.UserName,
-            //        authenticationMethod: "custom",
-            //        claims: new Claim[]
-            //        {
-            //            new Claim("Name", context.UserName),
-
-            //            new Claim("UserId", "1"),
-            //            new Claim("RealName", "玩双截棍的熊猫"),
-            //            new Claim("Email", "msmadaoe@msn.com")
-            //        });
-            //}
-            //else
-            //{
-            //    //验证失败
-            //    context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "invalid custom credential");
-            //}
         }
 
         private async Task<AbpLoginResult<Tenant, User>> GetLoginResultAsync(string usernameOrEmailAddress, string password, string tenancyName)
@@ -115,12 +116,12 @@ namespace AbpCoreMvcIdentiyServer.Web.Validator
         private static List<Claim> CreateJwtClaims(ClaimsIdentity identity)
         {
             var claims = identity.Claims.ToList();
-            var nameIdClaim = claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            var nameIdClaim = claims.First(c => c.Type == JwtRegisteredClaimNames.Sub);
 
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             claims.AddRange(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, nameIdClaim.Value),
+                new Claim(ClaimTypes.NameIdentifier, nameIdClaim.Value),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 //new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             });
