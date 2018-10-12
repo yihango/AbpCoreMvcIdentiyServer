@@ -64,7 +64,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
                         options.RequireHttpsMetadata = false;
                     });
 
-                // TODO:替换默认的 Claim Key
+                // TODO:替换默认的 Claim Key,因为AddAbpIdentityServer这个方法里面对这些做了更改
                 AbpClaimTypes.UserId = JwtClaimTypes.Subject;
                 AbpClaimTypes.UserName = JwtClaimTypes.Name;
                 AbpClaimTypes.Role = JwtClaimTypes.Role;
