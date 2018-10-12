@@ -10,6 +10,7 @@ namespace AbpCoreMvcIdentiyServer.EntityFrameworkCore
     [DependsOn(
            typeof(AbpCoreMvcIdentiyServerCoreModule),
            typeof(AbpZeroCoreEntityFrameworkCoreModule),
+           // TODO:abp zero identityServer4 module依赖
            typeof(AbpZeroCoreIdentityServerEntityFrameworkCoreModule))]
     public class AbpCoreMvcIdentiyServerEntityFrameworkModule : AbpModule
     {

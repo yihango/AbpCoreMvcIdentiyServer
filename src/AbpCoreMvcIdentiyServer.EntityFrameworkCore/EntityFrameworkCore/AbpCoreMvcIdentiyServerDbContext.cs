@@ -10,6 +10,8 @@ namespace AbpCoreMvcIdentiyServer.EntityFrameworkCore
     public class AbpCoreMvcIdentiyServerDbContext : AbpZeroDbContext<Tenant, Role, User, AbpCoreMvcIdentiyServerDbContext>, IAbpPersistedGrantDbContext
     {
         /* Define a DbSet for each entity of the application */
+
+        // TODO:abp zero identityServer4 实体
         public DbSet<PersistedGrantEntity> PersistedGrants { get; set; }
 
 
@@ -24,6 +26,7 @@ namespace AbpCoreMvcIdentiyServer.EntityFrameworkCore
         {
             base.OnModelCreating(modelBuilder);
 
+            // TODO:abp zero identityServer4 实体配置
             modelBuilder.ConfigurePersistedGrantEntity();
         }
     }
