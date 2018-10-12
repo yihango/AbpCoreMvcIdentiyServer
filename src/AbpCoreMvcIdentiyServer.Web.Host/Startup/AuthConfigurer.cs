@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Abp.Runtime.Security;
 using Microsoft.AspNetCore.Builder;
+using IdentityModel;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
 {
@@ -61,6 +63,15 @@ namespace AbpCoreMvcIdentiyServer.Web.Host.Startup
                         options.Authority = configuration["Authentication:IdentityServer4:Authority"];
                         options.RequireHttpsMetadata = false;
                     });
+
+                // TODO:替换默认的 Claim Key
+                AbpClaimTypes.UserId = JwtClaimTypes.Subject;
+                AbpClaimTypes.UserName = JwtClaimTypes.Name;
+                AbpClaimTypes.Role = JwtClaimTypes.Role;
+
+                JwtSecurityTokenHandler.DefaultInboundClaimTypeMap[AbpClaimTypes.UserId] = AbpClaimTypes.UserId;
+                JwtSecurityTokenHandler.DefaultInboundClaimTypeMap[AbpClaimTypes.UserName] = AbpClaimTypes.UserName;
+                JwtSecurityTokenHandler.DefaultInboundClaimTypeMap[AbpClaimTypes.Role] = AbpClaimTypes.Role;
             }
         }
 

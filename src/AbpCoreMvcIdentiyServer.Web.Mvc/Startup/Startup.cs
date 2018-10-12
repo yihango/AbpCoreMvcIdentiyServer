@@ -50,7 +50,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
                     .AddAbpPersistedGrants<IAbpPersistedGrantDbContext>()
                     .AddAbpIdentityServer<User>()
                     // 这两个都可以自定义
-                    .AddResourceOwnerValidator<CustomResourceOwnerPasswordValidator<User>>()
+                    .AddResourceOwnerValidator<AbpResourceOwnerPasswordValidator<User>>()
                     .AddProfileService<AbpProfileService<User>>();
 
             services.AddScoped<IWebResourceManager, WebResourceManager>();
