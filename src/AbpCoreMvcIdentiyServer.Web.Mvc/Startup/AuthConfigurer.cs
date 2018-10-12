@@ -55,7 +55,7 @@ namespace AbpCoreMvcIdentiyServer.Web.Startup
             else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
             {
                 services.AddAuthentication()
-                    .AddIdentityServerAuthentication("IdentityBearer", options =>
+                    .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
                     {
                         options.Authority = configuration["Authentication:IdentityServer4:Authority"];
                         options.RequireHttpsMetadata = false;
